@@ -1,0 +1,12 @@
+{
+  "id": "qq-social",
+  "name": "QQ 社交资料（空间 / 签名）",
+  "version": "0.1.0",
+  "description": "让角色设置个性签名、发 QQ 空间说说（文字/图片），并管理自己的说说。默认关闭；开启后由扩展自己校验隐私和频率。",
+  "entry": "index.js",
+  "enabled": false,
+  "capabilities": ["actions"],
+  "platforms": ["qq"],
+  "author": "local",
+  "requiresRestart": false
+}

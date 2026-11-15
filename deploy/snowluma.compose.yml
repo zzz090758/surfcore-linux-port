@@ -1,0 +1,45 @@
+# SnowLuma2 on Linux（Docker；源码来自 github.com/lingyu20/SnowLuma2）
+#
+# 用法（由 scripts/linux/install-snowluma.sh 调用）：
+#   SNOWLUMA2_DIR=$HOME/snowluma2 \
+#   SNOWLUMA_DATA=$HOME/snowluma-data \
+#   SNOWLUMA_CONFIG=$HOME/snowluma-config \
+#   SNOWLUMA_LOCAL=$HOME/snowluma-local \
+#   VNC_PASSWD='...' \
+#   docker compose -f deploy/snowluma.compose.yml up -d --build
+#
+# 端口只绑 127.0.0.1：远程扫码请用 SSH 隧道，不要把 noVNC/WebUI 暴露到公网。
+services:
+  snowluma:
+    build:
+      context: ${SNOWLUMA2_DIR:?set SNOWLUMA2_DIR}
+      dockerfile: Dockerfile
+      args:
+        # 国内网络可用 GH_PROXY 覆盖 QQ 安装包镜像：
+        # https://gh-proxy.com/https://github.com/Rodert/qq-versions/releases/download/...
+        QQ_MIRROR_URL: ${SNOWLUMA_QQ_MIRROR_URL:-https://github.com/Rodert/qq-versions/releases/download/qq-packages-20260813-1d08f1d4}
+    image: snowluma:2.2.0
+    container_name: snowluma
+    restart: unless-stopped
+    shm_size: 1gb
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp=unconfined
+    environment:
+      TZ: Asia/Shanghai
+      VNC_PASSWD: ${VNC_PASSWD:?set VNC_PASSWD}
+      SNOWLUMA_UID: ${SNOWLUMA_UID:-1000}
+      SNOWLUMA_GID: ${SNOWLUMA_GID:-1000}
+      SNOWLUMA_WEBUI_PORT: 5099
+      SNOWLUMA_ONEBOT_HOST: 0.0.0.0
+      SNOWLUMA_HOOK_AUTOLOAD: 1
+    ports:
+      - "127.0.0.1:6081:6081"   # noVNC（首次扫码）
+      - "127.0.0.1:5099:5099"   # SnowLuma WebUI
+      - "127.0.0.1:3000:3000"   # OneBot HTTP
+      - "127.0.0.1:3001:3001"   # OneBot WebSocket
+    volumes:
+      - ${SNOWLUMA_DATA:?set SNOWLUMA_DATA}:/app/data
+      - ${SNOWLUMA_CONFIG:?set SNOWLUMA_CONFIG}:/app/.config
+      - ${SNOWLUMA_LOCAL:?set SNOWLUMA_LOCAL}:/app/.local/share
